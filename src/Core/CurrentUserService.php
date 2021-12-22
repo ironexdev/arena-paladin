@@ -8,8 +8,9 @@ class CurrentUserService
 {
     /**
      * @param User|null $user
+     * @param bool $securelyAuthenticated
      */
-    public function __construct(private ?User $user = null)
+    public function __construct(private ?User $user = null, private bool $securelyAuthenticated = false)
     {
 
     }
@@ -17,9 +18,20 @@ class CurrentUserService
     /**
      * Returns true if the "current" user is logged
      */
-    public function isLogged(): bool
+    public function isAuthenticated(): bool
     {
-        return (bool) $this->user;
+        return (bool)$this->user;
+    }
+
+    public function logout()
+    {
+        Session::destroy();
+        Cookie::unsetToken();
+    }
+
+    public function isSecurelyAuthenticated(): bool
+    {
+        return $this->securelyAuthenticated;
     }
 
     /**

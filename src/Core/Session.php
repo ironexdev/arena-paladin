@@ -9,7 +9,7 @@ class Session
     private static string $xsrfToken = "xsrf_token";
     private static string $expiration = "expiration";
     private static string $userId = "user_id";
-    private static string $secureLogin = "secure_login";
+    private static string $securelyAuthenticated = "securely_authenticated";
 
     public static function start()
     {
@@ -92,17 +92,17 @@ class Session
     /**
      * @return bool
      */
-    public static function getSecureLogin(): bool
+    public static function getSecurelyAuthenticated(): bool
     {
-        return $_SESSION[static::$secureLogin] ?? false;
+        return $_SESSION[static::$securelyAuthenticated] ?? false;
     }
 
     /**
      * @param bool $secure
      */
-    public static function setSecureLogin(bool $secure)
+    public static function setSecurelyAuthenticated(bool $secure)
     {
-        $_SESSION[static::$secureLogin] = $secure;
+        $_SESSION[static::$securelyAuthenticated] = $secure;
     }
 
     /**

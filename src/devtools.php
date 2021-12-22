@@ -11,20 +11,10 @@ $whoops->register();
 // Pretty print
 function pretty_print($value)
 {
-    $valueType = gettype($value);
-
     header("Access-Control-Allow-Credentials: true");
     header("Access-Control-Allow-Origin: " . $_ENV["CLIENT_URL"]);
     header("Access-Control-Allow-Headers: *");
+    header("Content-Type: application/json");
 
-    if ($valueType === "array") {
-        echo "<pre>" . print_r($value, true) . "</pre>";
-    } else if ($valueType === "object") {
-        var_export($value);
-
-    } else if ($valueType === "boolean") {
-        echo $value ? "true" : "false";
-    } else {
-        echo $value;
-    }
+    echo json_encode($value);
 }

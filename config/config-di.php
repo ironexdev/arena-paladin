@@ -8,7 +8,6 @@ use Paladin\Cache\FilesystemCache\FilesystemCacheFactoryInterface;
 use Paladin\Cache\RedisCache\RedisCacheFactory;
 use Paladin\Cache\RedisCache\RedisCacheFactoryInterface;
 use Paladin\Enum\ContentTypeEnum;
-use Paladin\Enum\RequestHeaderEnum;
 use Psr\Container\ContainerInterface;
 use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\StreamFactoryInterface;
@@ -28,7 +27,6 @@ use Paladin\Core\Cookie;
 use Paladin\Core\Router;
 use Paladin\Core\CurrentUserService;
 use Paladin\Core\Session;
-use Paladin\Enum\ResponseHeaderEnum;
 use Paladin\Model\Document\AuthenticationToken;
 use Paladin\Model\Document\User;
 use Paladin\Security\SecurityService;
@@ -64,7 +62,7 @@ return [
             $user = $userRepository->findOneBy(["id" => $userId]);
 
             if ($user) {
-                return new CurrentUserService($user);
+                return new CurrentUserService($user, true);
             }
         }
 
@@ -102,7 +100,7 @@ return [
 
         if (isset($user)) {
             Session::setUserId($userId);
-            Session::setSecureLogin(false); // False because user is now logged in via cookie
+            Session::setSecurelyAuthenticated(false); // False because user is now logged in via cookie
 
             return new CurrentUserService($user);
         } else {

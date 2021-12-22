@@ -6,6 +6,7 @@ use Doctrine\ODM\MongoDB\DocumentManager;
 use Doctrine\ODM\MongoDB\MongoDBException;
 use Error;
 use GraphQL\Error\FormattedError;
+use Paladin\Core\CurrentUserService;
 use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\ServerRequestInterface;
 use Paladin\Enum\ResponseStatusCodeEnum;
@@ -16,9 +17,10 @@ use Paladin\Model\Document\User;
 use Paladin\Model\DocumentFactory\AuthenticationTokenFactory;
 use Paladin\Security\SecurityService;
 
-class LoginController extends AbstractController
+class AuthenticationController extends AbstractController
 {
     /**
+     * Login
      * @param ServerRequestInterface $request
      * @param ResponseInterface $response
      * @param AuthenticationTokenFactory $authenticationTokenFactory
@@ -62,12 +64,42 @@ class LoginController extends AbstractController
 
         // Secure login
         Session::setUserId($user->getId());
-        Session::setSecureLogin(true); // This value should be false if user is logged via authentication token stored in cookies
+        Session::setSecurelyAuthenticated(true); // This value should be false if user is logged via authentication token stored in cookies
 
         // Remember user
         if ($remember) {
             $this->rememberUser($securityService, $authenticationTokenFactory, $user, $documentManager);
         }
+
+        return $this->jsonResponse((object)["status" => true], $response);
+    }
+
+    /**
+     * @param ServerRequestInterface $request
+     * @param ResponseInterface $response
+     * @param CurrentUserService $currentUserService
+     * @return ResponseInterface
+     */
+    public function read(ServerRequestInterface $request, ResponseInterface $response, CurrentUserService $currentUserService): ResponseInterface
+    {
+        $responseBody = [
+            "authenticated" => $currentUserService->isAuthenticated(),
+            "securely_authenticated" => $currentUserService->isSecurelyAuthenticated()
+        ];
+
+        return $this->jsonResponse((object)$responseBody, $response);
+    }
+
+    /**
+     * Logout
+     * @param ServerRequestInterface $request
+     * @param ResponseInterface $response
+     * @param CurrentUserService $currentUserService
+     * @return ResponseInterface
+     */
+    public function delete(ServerRequestInterface $request, ResponseInterface $response, CurrentUserService $currentUserService): ResponseInterface
+    {
+        $currentUserService->logout();
 
         return $this->jsonResponse((object)["status" => true], $response);
     }

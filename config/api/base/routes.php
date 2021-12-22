@@ -2,8 +2,7 @@
 
 use Paladin\Api\Base\XsrfController;
 use Paladin\Api\Base\IndexController;
-use Paladin\Api\Base\LoginController;
-use Paladin\Api\Base\LogoutController;
+use Paladin\Api\Base\AuthenticationController;
 use Paladin\Enum\RequestMethodEnum;
 
 return [
@@ -12,14 +11,15 @@ return [
             "handler" => IndexController::class . "::read"
         ]
     ],
-    "/login" => [
-        RequestMethodEnum::POST => [
-            "handler" => LoginController::class . "::create"
-        ]
-    ],
-    "/logout" => [
+    "/authentication" => [
         RequestMethodEnum::DELETE => [
-            "handler" => LogoutController::class . "::delete"
+            "handler" => AuthenticationController::class . "::delete"
+        ],
+        RequestMethodEnum::GET => [
+            "handler" => AuthenticationController::class . "::read"
+        ],
+        RequestMethodEnum::POST => [
+            "handler" => AuthenticationController::class . "::create"
         ]
     ],
     "/xsrf" => [

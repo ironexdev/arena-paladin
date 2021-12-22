@@ -3,6 +3,8 @@
 namespace Paladin\Core;
 
 use Error;
+use Paladin\Enum\ResponseErrorCodeEnum;
+use Paladin\Exception\Http\ForbiddenException;
 use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\ServerRequestInterface;
 use Psr\Http\Message\StreamInterface;
@@ -23,6 +25,7 @@ class Kernel
      * @param Router $router
      * @param ServerRequestInterface $serverRequest
      * @param SecurityServiceInterface $securityService
+     * @throws ForbiddenException
      */
     public function __construct(
         CorsMiddleware                   $corsMiddleware,
@@ -30,7 +33,7 @@ class Kernel
         ResponseInterface                $defaultResponse,
         Router                           $router,
         ServerRequestInterface           $serverRequest,
-        private SecurityServiceInterface $securityService
+        SecurityServiceInterface $securityService
     )
     {
         Session::start();
@@ -65,14 +68,7 @@ class Kernel
             $router
         );
 
-        $response = $middlewareStack->handle($serverRequest);
-
-        // Add XSRF token to response for all GET requests
-        if ($serverRequest->getMethod() === RequestMethodEnum::GET) {
-            $response = $this->addXsrfToken($serverRequest, $response);
-        }
-
-        return $response;
+        return $middlewareStack->handle($serverRequest);
     }
 
     /**
@@ -96,6 +92,7 @@ class Kernel
     /**
      * @param ServerRequestInterface $serverRequest
      * @param SecurityServiceInterface $securityService
+     * @throws ForbiddenException
      */
     private function validateXsrfToken(ServerRequestInterface $serverRequest, SecurityServiceInterface $securityService): void
     {
@@ -110,27 +107,10 @@ class Kernel
             $requestXsrfToken = $serverRequest->getHeaderLine(RequestHeaderEnum::X_XSRF_TOKEN);
 
             if (!$storedXsrfToken || !$requestXsrfToken || !$securityService->hashEquals($storedXsrfToken, $requestXsrfToken)) {
-                throw new Error("Invalid XSRF Token '" . $requestXsrfToken . "' for session '" . session_id() . "'.", ResponseStatusCodeEnum::FORBIDDEN);
+                throw new ForbiddenException(
+                    ResponseErrorCodeEnum::XSRF . " Invalid XSRF Token"
+                );
             }
         }
-    }
-
-    /**
-     * @param ServerRequestInterface $serverRequest
-     * @param ResponseInterface $response
-     * @return ResponseInterface
-     */
-    private function addXsrfToken(ServerRequestInterface $serverRequest, ResponseInterface $response): ResponseInterface
-    {
-        $xsrfToken = Session::getXsrfToken();
-
-        if (!$xsrfToken) {
-            $xsrfToken = $this->securityService->xsrfToken();
-            Session::setXsrfToken($xsrfToken);
-        }
-
-        return $response
-            ->withHeader(ResponseHeaderEnum::ACCESS_CONTROL_ALLOW_HEADERS, ResponseHeaderEnum::XSRF_TOKEN)
-            ->withHeader(ResponseHeaderEnum::XSRF_TOKEN, $xsrfToken);
     }
 }

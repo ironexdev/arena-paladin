@@ -2,6 +2,7 @@
 
 namespace Paladin\Api\Base;
 
+use Paladin\Core\CurrentUserService;
 use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\StreamFactoryInterface;
 use Psr\Log\LoggerInterface;
@@ -16,8 +17,8 @@ abstract class AbstractController
      * @param StreamFactoryInterface $streamFactory
      */
     public function __construct(
-        protected LoggerInterface $logger,
-        protected TranslatorInterface $translator,
+        protected LoggerInterface      $logger,
+        protected TranslatorInterface  $translator,
         private StreamFactoryInterface $streamFactory)
     {
     }
