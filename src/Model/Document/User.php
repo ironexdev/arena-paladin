@@ -10,7 +10,7 @@ use Paladin\Model\Document\DocumentTrait\CreatedTrait;
 use Paladin\Model\Document\DocumentTrait\UpdatedTrait;
 
 /**
- * @ODM\Document(repositoryClass="Paladin\Model\Repository\UserRepository")
+ * @ODM\Document(repositoryClass="Paladin\Model\Repository\User\UserRepository")
  * @ODM\HasLifecycleCallbacks
  */
 #[Type]
@@ -43,7 +43,6 @@ class User extends AbstractDocument
     private string $email;
 
     /** @ODM\Field(type="string") */
-    #[Field]
     private string $password;
 
     /**
@@ -122,7 +121,7 @@ class User extends AbstractDocument
     /**
      * @param string $nickname
      */
-    public function setNickName(string $nickname): void
+    public function setNickname(string $nickname): void
     {
         $this->nickname = $nickname;
     }

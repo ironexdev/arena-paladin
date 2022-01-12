@@ -15,11 +15,12 @@ use Doctrine\ODM\MongoDB\Tools\Console\Command\Schema\UpdateCommand;
 use Doctrine\ODM\MongoDB\Tools\Console\Helper\DocumentManagerHelper;
 use Symfony\Component\Console\Application;
 use Symfony\Component\Console\Helper\HelperSet;
-use Paladin\Command\ODM\Seed\AuthenticationTokenSeedCommand;
 use Paladin\Command\ODM\Seed\SeedCommand;
 use Paladin\Command\ODM\Seed\UserSeedCommand;
 
-if ($_ENV["ERROR_REPORTING"] === "true") {
+require_once(__DIR__ . DIRECTORY_SEPARATOR . ".." . DIRECTORY_SEPARATOR . "config" . DIRECTORY_SEPARATOR . "config.php");
+
+if (ERROR_REPORTING === "true") {
     error_reporting(E_ALL);
     ini_set("display_errors", "On");
 }
@@ -53,6 +54,5 @@ $application->add($container->get(UpdateCommand::class));
 $application->add($container->get(ShardCommand::class));
 $application->add($container->get(SeedCommand::class));
 $application->add($container->get(UserSeedCommand::class));
-$application->add($container->get(AuthenticationTokenSeedCommand::class));
 
 $application->run();

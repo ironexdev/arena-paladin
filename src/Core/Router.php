@@ -2,7 +2,7 @@
 
 namespace Paladin\Core;
 
-use DI\Container;
+use Psr\Container\ContainerInterface;
 use Psr\Http\Message\ResponseFactoryInterface;
 use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\ServerRequestInterface;
@@ -11,7 +11,7 @@ use Psr\Http\Server\RequestHandlerInterface;
 
 class Router implements MiddlewareInterface
 {
-    public function __construct(private Container $container, private ResponseFactoryInterface $responseFactory, private array $routes)
+    public function __construct(private ContainerInterface $container, private ResponseFactoryInterface $responseFactory, private array $routes)
     {
     }
 

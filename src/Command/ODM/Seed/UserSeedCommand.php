@@ -4,11 +4,12 @@ namespace Paladin\Command\ODM\Seed;
 
 use Doctrine\ODM\MongoDB\DocumentManager;
 use Doctrine\ODM\MongoDB\MongoDBException;
+use Paladin\Model\DocumentFactory\User\UserFactoryInterface;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
 use Paladin\Model\Document\User;
-use Paladin\Security\SecurityServiceInterface;
+use Paladin\Service\Security\SecurityServiceInterface;
 
 class UserSeedCommand extends Command
 {
@@ -17,10 +18,12 @@ class UserSeedCommand extends Command
     /**
      * @param DocumentManager $documentManager
      * @param SecurityServiceInterface $securityService
+     * @param UserFactoryInterface $userFactory
      */
     public function __construct(
-        private DocumentManager $documentManager,
-        private SecurityServiceInterface $securityService
+        private DocumentManager          $documentManager,
+        private SecurityServiceInterface $securityService,
+        private UserFactoryInterface     $userFactory
     )
     {
         parent::__construct(static::getDefaultName());
@@ -39,13 +42,14 @@ class UserSeedCommand extends Command
      */
     protected function execute(InputInterface $input, OutputInterface $output): int
     {
-        $user = new User();
-        $user->setFirstName("First Name");
-        $user->setLastName("Last Name");
-        $user->setNickName("Nickname");
-        $user->setEmail("name@domain.com");
-        $user->setPassword($this->securityService->passwordHash("password123456"));
-        $user->setActive(true);
+        $user = $this->userFactory->create(
+            "First Name",
+            "Last Name",
+            "Nickname",
+            "name@domain.com",
+            $this->securityService->passwordHash("password123456"),
+            true
+        );
 
         $this->documentManager->persist($user);
 

@@ -1,0 +1,17 @@
+{
+  "inactive_user": "Your account is inactive, please activate it by clicking on a verification link we've sent to your inbox after registration.",
+
+  "invalid_authorization_code": "Invalid authorization code",
+  "invalid_email_format": "Invalid e-mail format",
+  "invalid_email_or_password": "You've entered wrong e-mail and/or password",
+  "invalid_password_format": "Use lowercase and uppercase letters and numbers",
+  "string_max_length": "{limit, plural, =0 {Use at most # characters} one {Use at most # character} other {Use at most # characters}}",
+  "string_min_length": "{limit, plural, =0 {Use at least # characters} one {Use at least # character} other {Use at least # characters}}",
+
+  "email_account_already_exists_subject": "Account with your e-mail already exists in our database",
+  "email_account_already_exists_body": "Hello, <br> someone tried to create an account on our website.<br>If it wasn't you then please let us know.<br>If it was you, then you can <a href='{loginLink}' title='Login'>login</a>.",
+  "email_activate_user_subject": "New Account Verification",
+  "email_activate_user_body": "Hello, <br> click on <a href='{authorizationLink}' title='Activate account'>this link</a> in order to activate your account.",
+  "email_login_authorization_subject": "Login Authorization",
+  "email_login_authorization_body": "Hello, <br>click on <a href='{authorizationLink}' title='Login'>this link</a> in order to login."
+}

@@ -14,7 +14,7 @@ trait ActiveTrait
     /**
      * @return bool
      */
-    public function isActive(): bool
+    public function getActive(): bool
     {
         return $this->active;
     }

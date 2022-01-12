@@ -27,7 +27,6 @@ class SeedCommand extends Command
     {
         $commands = [
             $this->getApplication()->find("odm:seed:user"),
-            $this->getApplication()->find("odm:seed:authentication-token")
         ];
 
         $emptyInput = new ArrayInput([]);
