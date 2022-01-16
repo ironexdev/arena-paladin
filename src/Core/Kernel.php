@@ -2,15 +2,15 @@
 
 namespace Paladin\Core;
 
-use Paladin\Core\MiddlewareStack\MiddlewareStackInterface;
 use Psr\Http\Message\ServerRequestInterface;
 use Psr\Http\Message\StreamInterface;
+use Psr\Http\Server\RequestHandlerInterface;
 
 class Kernel
 {
     public function __construct(
-        ServerRequestInterface $serverRequest,
-        MiddlewareStackInterface        $middlewareStack
+        ServerRequestInterface  $serverRequest,
+        RequestHandlerInterface $middlewareStack
     )
     {
         $response = $middlewareStack->handle($serverRequest);

@@ -10,9 +10,9 @@
   "only_letters": "Use only letters",
 
   "email_account_already_exists_subject": "Account with your e-mail already exists in our database",
-  "email_account_already_exists_body": "Hello, <br> someone tried to create an account on our website.<br>If it wasn't you then please let us know.<br>If it was you, then you can <a href='{loginLink}' title='Login'>login</a>.",
+  "email_account_already_exists_body": "Hello, <br> someone tried to create an account on our website.<br>If it wasn't you then please let us know.<br>If it was you, then you can <a href=\"{loginLink}\" title='Login'>login</a>.",
   "email_activate_user_subject": "New Account Verification",
-  "email_activate_user_body": "Hello, <br> click on <a href='{authorizationLink}' title='Activate account'>this link</a> in order to activate your account.",
+  "email_activate_user_body": "Hello, <br> click on <a href=\"{authorizationLink}\" title='Activate account'>this link</a> in order to activate your account.",
   "email_login_authorization_subject": "Login Authorization",
-  "email_login_authorization_body": "Hello, <br>click on <a href='{authorizationLink}' title='Login'>this link</a> in order to login."
+  "email_login_authorization_body": "Hello, <br>click on <a href=\"{authorizationLink}\" title='Login'>this link</a> in order to login."
 }

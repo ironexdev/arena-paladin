@@ -6,5 +6,6 @@ use MyCLabs\Enum\Enum;
 
 class ContentTypeEnum extends Enum
 {
+    const HTML = "text/html";
     const JSON = "application/json";
 }

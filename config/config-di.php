@@ -14,11 +14,9 @@ use Paladin\Cache\FilesystemCache\FilesystemCacheFactory;
 use Paladin\Cache\FilesystemCache\FilesystemCacheFactoryInterface;
 use Paladin\Core\MiddlewareStack\MiddlewareStack;
 use Paladin\Core\MiddlewareStack\MiddlewareStackInterface;
-use Paladin\Core\Router;
 use Paladin\Enum\ContentTypeEnum;
 use Paladin\Enum\EnvironmentEnum;
 use Paladin\Enum\InMemoryCacheNamespaceEnum;
-use Paladin\Enum\LocaleEnum;
 use Paladin\Enum\RequestMethodEnum;
 use Paladin\Enum\ResponseStatusCodeEnum;
 use Paladin\Exception\Client\UserNotFoundException;
@@ -57,6 +55,7 @@ use Psr\Http\Message\ServerRequestInterface;
 use Psr\Http\Message\StreamFactoryInterface;
 use Psr\Http\Message\UploadedFileFactoryInterface;
 use Psr\Http\Message\UriFactoryInterface;
+use Psr\Http\Server\RequestHandlerInterface;
 use Psr\Log\LoggerInterface;
 use Symfony\Component\Mailer\Mailer;
 use Symfony\Component\Mailer\MailerInterface;
@@ -74,19 +73,7 @@ use Tuupola\Middleware\CorsMiddleware;
 return [
     /* Custom Interfaces *****************************************************/
     /*************************************************************************/
-    MiddlewareStackInterface::class => DI\factory(function (
-        ResponseInterface        $defaultResponse,
-        CorsMiddleware           $corsMiddleware,
-        WebonyxGraphqlMiddleware $graphQLMiddleware,
-        Router                   $router
-    ): MiddlewareStackInterface {
-        return new MiddlewareStack(
-            $defaultResponse->withStatus(ResponseStatusCodeEnum::NOT_FOUND), // default/fallback response
-            $corsMiddleware,
-            $graphQLMiddleware,
-            $router
-        );
-    }),
+
     // Services
     AuthenticationServiceInterface::class => DI\factory(function (
         AuthenticationTokenFactoryInterface $authenticationTokenFactory,
@@ -157,9 +144,16 @@ return [
     }),
 
     // Implements PSR-15
-    Router::class => DI\factory(function (ContainerInterface $container, ResponseFactoryInterface $responseFactory) {
-        $routes = require_once(APP_DIRECTORY . DS . ".." . DS . "config" . DS . "api" . DS . "rest" . DS . "routes.php");
-        return new Router($container, $responseFactory, $routes);
+    RequestHandlerInterface::class => DI\factory(function (
+        ResponseInterface        $defaultResponse,
+        CorsMiddleware           $corsMiddleware,
+        WebonyxGraphqlMiddleware $graphQLMiddleware
+    ): MiddlewareStackInterface {
+        return new MiddlewareStack(
+            $defaultResponse->withStatus(ResponseStatusCodeEnum::NOT_FOUND), // default/fallback response
+            $corsMiddleware,
+            $graphQLMiddleware
+        );
     }),
 
     // Implements PSR-16
