@@ -224,10 +224,9 @@ return [
 
     // Tuupola
     CorsMiddleware::class => DI\factory(function (LoggerInterface $logger) {
-        $allowedOrigins = [CLIENT_URL];
 
         return new CorsMiddleware([
-            "origin" => $allowedOrigins,
+            "origin" => explode(",", ACCESS_CONTROL_ALLOW_ORIGINS),
             "methods" => RequestMethodEnum::toArray(),
             "headers.allow" => explode(",", ACCESS_CONTROL_ALLOW_HEADERS),
             "headers.expose" => explode(",", ACCESS_CONTROL_EXPOSE_HEADERS),
