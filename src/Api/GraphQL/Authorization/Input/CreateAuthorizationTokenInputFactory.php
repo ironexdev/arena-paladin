@@ -10,13 +10,11 @@ class CreateAuthorizationTokenInputFactory
     public function create(
         string $email,
         string $action,
-        bool $remember = false
     ): CreateAuthorizationTokenInput
     {
         $createAuthorizationTokenInput = new CreateAuthorizationTokenInput();
         $createAuthorizationTokenInput->setEmail($email);
         $createAuthorizationTokenInput->setAction($action);
-        $createAuthorizationTokenInput->setRemember($remember);
 
         return $createAuthorizationTokenInput;
     }

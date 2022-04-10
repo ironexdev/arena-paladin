@@ -7,4 +7,6 @@ use Paladin\Model\Document\AuthorizationToken;
 interface AuthorizationTokenRepositoryInterface
 {
     public function persist(AuthorizationToken $authorizationToken): AuthorizationToken;
+
+    public function delete(AuthorizationToken $authorizationToken);
 }

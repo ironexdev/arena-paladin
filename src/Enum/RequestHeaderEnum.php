@@ -8,6 +8,7 @@ class RequestHeaderEnum extends Enum
 {
     const ACCEPT = "Accept";
     const ACCEPT_LANGUAGE = "Accept-Language";
+    const AUTHORIZATION = "Authorization";
     const CONTENT_LENGTH = "Content-Length";
     const CONTENT_TYPE = "Content-Type";
     const X_COUNTRY = "X-Country";

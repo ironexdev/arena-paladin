@@ -13,7 +13,6 @@ use Symfony\Component\Cache\Psr16Cache;
 
 class InMemoryCacheService implements InMemoryCacheServiceInterface
 {
-    private ?Cacheinterface $authenticationTokenCache = null;
     private ?Cacheinterface $defaultCache = null;
 
     public function __construct(private string $dsn)
@@ -47,21 +46,6 @@ class InMemoryCacheService implements InMemoryCacheServiceInterface
         }
     }
 
-    private function authenticationTokenCache(): Cacheinterface
-    {
-        if (!$this->authenticationTokenCache) {
-            $client = RedisAdapter::createConnection(
-                $this->dsn
-            );
-
-            $this->authenticationTokenCache = new Psr16Cache(
-                new RedisAdapter($client, InMemoryCacheNamespaceEnum::AUTHENTICATION_TOKEN)
-            );
-        }
-
-        return $this->authenticationTokenCache;
-    }
-
     private function defaultCache(): Cacheinterface
     {
         if (!$this->defaultCache) {
@@ -80,10 +64,6 @@ class InMemoryCacheService implements InMemoryCacheServiceInterface
     private function getCacheByNamespace(string $namespace): Cacheinterface
     {
         switch ($namespace) {
-            case InMemoryCacheNamespaceEnum::AUTHENTICATION_TOKEN:
-            {
-                return $this->authenticationTokenCache();
-            }
             default:
             {
                 return $this->defaultCache();

@@ -2,7 +2,7 @@
 
 namespace Paladin\Service\Authorization;
 
-use Paladin\Exception\Client\InvalidAuthorizationTokenException;
+use Paladin\Exception\Client\InvalidAuthorizationCodeException;
 use Paladin\Model\Document\AuthorizationToken;
 use Paladin\Model\Document\User;
 use Paladin\Model\DocumentFactory\AuthorizationToken\AuthorizationTokenFactoryInterface;
@@ -44,8 +44,18 @@ class AuthorizationService implements AuthorizationServiceInterface
         );
     }
 
+    public function createAuthorizationTokenSelector(): string
+    {
+        return $this->securityService->bin2hex($this->securityService->randomBytes(16));
+    }
+
+    public function createAuthorizationTokenValidator(): string
+    {
+        return $this->securityService->bin2hex($this->securityService->randomBytes(32));
+    }
+
     /**
-     * @throws InvalidAuthorizationTokenException
+     * @throws InvalidAuthorizationCodeException
      */
     public function fetchAuthorizationTokenBySelector(string $selector): AuthorizationToken
     {
@@ -53,7 +63,7 @@ class AuthorizationService implements AuthorizationServiceInterface
         $authorizationToken = $this->authorizationTokenRepository->findOneBy(["selector" => $selector]);
 
         if (!$authorizationToken) {
-            throw new InvalidAuthorizationTokenException("Authorization Token not found");
+            throw new InvalidAuthorizationCodeException("Authorization Token not found");
         }
 
         return $authorizationToken;
@@ -66,27 +76,24 @@ class AuthorizationService implements AuthorizationServiceInterface
     }
 
     /**
-     * @throws InvalidAuthorizationTokenException
+     * @throws InvalidAuthorizationCodeException
      */
     public function validateAuthorizationToken(string $validator, AuthorizationToken $authorizationToken)
     {
-        $validator = $this->securityService->hash("sha256", $validator); // Validator stored in a Cookie is not hashed
-        $storedAuthorizationTokenValidator = $authorizationToken->getValidator();
+        $validator = $this->securityService->hash("sha256", $validator);
 
-        $validHash = $this->securityService->hashEquals($storedAuthorizationTokenValidator, $validator);
+        $validHash = $this->securityService->hashEquals($authorizationToken->getValidator(), $validator);
 
         if (!$validHash) {
-            throw new InvalidAuthorizationTokenException("Authorization Token is not valid");
+            throw new InvalidAuthorizationCodeException("Authorization Token is not valid");
         }
+
+        $this->deleteAuthorizationToken($authorizationToken);
     }
 
-    public function createAuthorizationTokenSelector(): string
+    private function deleteAuthorizationToken(AuthorizationToken $authorizationToken)
     {
-        return $this->securityService->bin2hex($this->securityService->randomBytes(16));
-    }
-
-    public function createAuthorizationTokenValidator(): string
-    {
-        return $this->securityService->bin2hex($this->securityService->randomBytes(32));
+        /** @var ?AuthorizationToken $authorizationToken */
+        $this->authorizationTokenRepository->delete($authorizationToken);
     }
 }

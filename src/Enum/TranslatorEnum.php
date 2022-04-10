@@ -14,7 +14,8 @@ class TranslatorEnum extends Enum
     const INVALID_PASSWORD_FORMAT = "invalid_password_format";
     const STRING_MAX_LENGTH = "string_max_length";
     const STRING_MIN_LENGTH = "string_min_length";
-    CONST ONLY_LETTERS = "only_letters";
+    const ONLY_LETTERS = "only_letters";
+    const UNAUTHENTICATED = "unauthenticated";
 
     // E-mail
     const EMAIL_ACCOUNT_ALREADY_EXISTS_SUBJECT = "email_account_already_exists_subject";

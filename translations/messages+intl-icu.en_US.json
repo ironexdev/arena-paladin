@@ -8,6 +8,7 @@
   "string_max_length": "{limit, plural, =0 {Use at most # characters} one {Use at most # character} other {Use at most # characters}}",
   "string_min_length": "{limit, plural, =0 {Use at least # characters} one {Use at least # character} other {Use at least # characters}}",
   "only_letters": "Use only letters",
+  "unauthenticated": "You are not logged in, therefore you can't logout",
 
   "email_account_already_exists_subject": "Account with your e-mail already exists in our database",
   "email_account_already_exists_body": "Hello, <br> someone tried to create an account on our website.<br>If it wasn't you then please let us know.<br>If it was you, then you can <a href=\"{loginLink}\" title='Login'>login</a>.",

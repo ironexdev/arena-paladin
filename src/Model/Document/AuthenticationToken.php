@@ -4,23 +4,20 @@ namespace Paladin\Model\Document;
 
 use Doctrine\ODM\MongoDB\Mapping\Annotations as ODM;
 use JetBrains\PhpStorm\Pure;
-use Paladin\Exception\Client\InvalidAuthorizationCodeException;
+use Paladin\Exception\Client\InvalidAuthenticationCodeException;
 use Paladin\Model\Document\DocumentTrait\ActiveTrait;
 use Paladin\Model\Document\DocumentTrait\CreatedTrait;
 use Paladin\Model\Document\DocumentTrait\UpdatedTrait;
 
 /**
- * @ODM\Document(repositoryClass="Paladin\Model\Repository\AuthorizationToken\AuthorizationTokenRepository")
+ * @ODM\Document(repositoryClass="Paladin\Model\Repository\AuthenticationToken\AuthenticationTokenRepository")
  * @ODM\HasLifecycleCallbacks
  */
-class AuthorizationToken extends AbstractDocument
+class AuthenticationToken extends AbstractDocument
 {
     use ActiveTrait;
     use CreatedTrait;
     use UpdatedTrait;
-
-    /** @ODM\Field(type="string") */
-    private string $action;
 
     /** @ODM\Field(type="string") */
     private string $selector;
@@ -30,22 +27,6 @@ class AuthorizationToken extends AbstractDocument
 
     /** @ODM\ReferenceOne(targetDocument=User::class) */
     private User $user;
-
-    /**
-     * @return string
-     */
-    public function getAction(): string
-    {
-        return $this->action;
-    }
-
-    /**
-     * @param string $action
-     */
-    public function setAction(string $action): void
-    {
-        $this->action = $action;
-    }
 
     /**
      * @return string
@@ -96,18 +77,18 @@ class AuthorizationToken extends AbstractDocument
     }
 
     /**
-     * Get Authorization token selector and validator from string
-     * @throws InvalidAuthorizationCodeException
+     * Get Authentication token selector and validator from string
+     * @throws InvalidAuthenticationCodeException
      */
-    public static function parseAuthorizationCode(string $authorizationCode): array
+    public static function parseAuthenticationCode(string $authenticationCode): array
     {
-        $parsedAuthorizationCode = explode(":", $authorizationCode);
+        $parsedAuthenticationCode = explode(":", $authenticationCode);
 
-        $selector = $parsedAuthorizationCode[0] ?? null;
-        $validator = $parsedAuthorizationCode[1] ?? null;
+        $selector = $parsedAuthenticationCode[0] ?? null;
+        $validator = $parsedAuthenticationCode[1] ?? null;
 
         if (!$selector || !$validator) {
-            throw new InvalidAuthorizationCodeException("Invalid Authorization Code format");
+            throw new InvalidAuthenticationCodeException("Invalid Authentication Code format");
         }
 
         return [
@@ -116,7 +97,7 @@ class AuthorizationToken extends AbstractDocument
         ];
     }
 
-    #[Pure] public function __toString(): string // AuthorizationCode = selector:validator
+    #[Pure] public function __toString(): string // AuthenticationCode = selector:validator
     {
         return $this->getSelector() . ":" . $this->getValidator();
     }

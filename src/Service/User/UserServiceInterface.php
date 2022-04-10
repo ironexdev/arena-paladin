@@ -2,7 +2,7 @@
 
 namespace Paladin\Service\User;
 
-use Paladin\Exception\Client\InvalidAuthorizationTokenException;
+use Paladin\Exception\Client\InvalidAuthorizationCodeException;
 use Paladin\Exception\Client\UserNotFoundException;
 use Paladin\Model\Document\AuthorizationToken;
 use Paladin\Model\Document\User;
@@ -12,10 +12,10 @@ interface UserServiceInterface
     public function isUnique(User $newUser): bool;
 
     /**
-     * @throws InvalidAuthorizationTokenException
+     * @throws InvalidAuthorizationCodeException
      * @throws UserNotFoundException
      */
-    public function activateUser(string $authorizationTokenString);
+    public function activateUser(string $authorizationCode);
 
     /**
      * @throws UserNotFoundException

@@ -11,7 +11,7 @@ use Paladin\Enum\AuthorizationActionEnum;
 use Paladin\Enum\LoggerEnum;
 use Paladin\Enum\ResponseStatusCodeEnum;
 use Paladin\Enum\TranslatorEnum;
-use Paladin\Exception\Client\InvalidAuthorizationTokenException;
+use Paladin\Exception\Client\InvalidAuthorizationCodeException;
 use Paladin\Exception\Client\UserNotFoundException;
 use Paladin\Model\Document\User;
 use Paladin\Model\DocumentFactory\User\UserFactoryInterface;
@@ -82,11 +82,11 @@ class UserController extends AbstractController
     ): bool
     {
         $this->validateInput($activateUserInput);
-        $authorizationTokenString = $activateUserInput->getAuthorizationToken();
+        $authorizationCode = $activateUserInput->getAuthorizationCode();
 
         try {
-            $userService->activateUser($authorizationTokenString);
-        } catch (InvalidAuthorizationTokenException|UserNotFoundException $e) {
+            $userService->activateUser($authorizationCode);
+        } catch (InvalidAuthorizationCodeException|UserNotFoundException $e) {
             $this->logger->info(LoggerEnum::ACTIVATE_USER_FAILED, ["exception" => $e]);
             throw new GraphQLException($translator->trans(TranslatorEnum::INVALID_AUTHORIZATION_CODE), ResponseStatusCodeEnum::FORBIDDEN);
         }

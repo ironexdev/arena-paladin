@@ -2,7 +2,7 @@
 
 namespace Paladin\Service\Authorization;
 
-use Paladin\Exception\Client\InvalidAuthorizationTokenException;
+use Paladin\Exception\Client\InvalidAuthorizationCodeException;
 use Paladin\Model\Document\AuthorizationToken;
 use Paladin\Model\Document\User;
 use TheCodingMachine\GraphQLite\Security\AuthorizationServiceInterface as GraphQLiteAuthorizationServiceInterface;
@@ -16,17 +16,17 @@ interface AuthorizationServiceInterface extends GraphQLiteAuthorizationServiceIn
         User   $user
     ): AuthorizationToken;
 
+    public function createAuthorizationTokenSelector(): string;
+
+    public function createAuthorizationTokenValidator(): string;
+
     /**
-     * @throws InvalidAuthorizationTokenException
+     * @throws InvalidAuthorizationCodeException
      */
     public function fetchAuthorizationTokenBySelector(string $selector): AuthorizationToken;
 
     /**
-     * @throws InvalidAuthorizationTokenException
+     * @throws InvalidAuthorizationCodeException
      */
     public function validateAuthorizationToken(string $validator, AuthorizationToken $authorizationToken);
-
-    public function createAuthorizationTokenSelector(): string;
-
-    public function createAuthorizationTokenValidator(): string;
 }

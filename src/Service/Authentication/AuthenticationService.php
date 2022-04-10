@@ -3,34 +3,54 @@
 namespace Paladin\Service\Authentication;
 
 use JetBrains\PhpStorm\Pure;
-use Paladin\Enum\InMemoryCacheNamespaceEnum;
 use Paladin\Exception\Client\InactiveUserException;
-use Paladin\Exception\Client\InvalidAuthorizationTokenException;
+use Paladin\Exception\Client\InvalidAuthorizationCodeException;
 use Paladin\Exception\Client\InvalidPasswordException;
 use Paladin\Exception\Client\UserNotFoundException;
+use Paladin\Model\Document\AuthenticationToken;
 use Paladin\Model\Document\AuthorizationToken;
 use Paladin\Model\Document\User;
-use Paladin\Model\Entity\AuthenticationToken;
-use Paladin\Model\EntityFactory\AuthenticationToken\AuthenticationTokenFactoryInterface;
+use Paladin\Model\DocumentFactory\AuthenticationToken\AuthenticationTokenFactoryInterface;
+use Paladin\Model\Repository\AuthenticationToken\AuthenticationTokenRepositoryInterface;
 use Paladin\Service\Authorization\AuthorizationServiceInterface;
-use Paladin\Service\Cache\InMemoryCacheServiceInterface;
-use Paladin\Service\Cookie\CookieServiceInterface;
 use Paladin\Service\Security\SecurityServiceInterface;
 use Paladin\Service\User\UserServiceInterface;
 
 class AuthenticationService implements AuthenticationServiceInterface
 {
     public function __construct(
-        private AuthenticationTokenFactoryInterface $authenticationTokenFactory,
-        private AuthorizationServiceInterface       $authorizationService,
-        private CookieServiceInterface              $cookieService,
-        private InMemoryCacheServiceInterface       $inMemoryCacheService,
-        private SecurityServiceInterface            $securityService,
-        private UserServiceInterface                $userService,
-        private ?AuthenticationToken                $authenticationToken,
-        private ?User                               $user
+        private AuthenticationTokenFactoryInterface    $authenticationTokenFactory,
+        private AuthenticationTokenRepositoryInterface $authenticationTokenRepository,
+        private AuthorizationServiceInterface          $authorizationService,
+        private SecurityServiceInterface               $securityService,
+        private UserServiceInterface                   $userService,
+        private ?User                                  $user
     )
     {
+    }
+
+    public function createAuthenticationToken(string $selector, string $validator, User $user): AuthenticationToken
+    {
+        $hashedValidator = $this->securityService->hash(
+            "sha256",
+            $validator
+        );
+
+        return $this->authenticationTokenFactory->create(
+            $selector,
+            $hashedValidator,
+            $user
+        );
+    }
+
+    public function createAuthenticationTokenSelector(): string
+    {
+        return $this->securityService->bin2hex($this->securityService->randomBytes(16));
+    }
+
+    public function createAuthenticationTokenValidator(): string
+    {
+        return $this->securityService->bin2hex($this->securityService->randomBytes(32));
     }
 
     #[Pure] public function isAuthenticated(): bool
@@ -50,9 +70,8 @@ class AuthenticationService implements AuthenticationServiceInterface
      */
     public function login(
         string $email,
-        string $password,
-        bool   $remember
-    )
+        string $password
+    ): User
     {
         $user = $this->userService->fetchUserByEmail($email);
 
@@ -64,25 +83,19 @@ class AuthenticationService implements AuthenticationServiceInterface
             throw new InactiveUserException();
         }
 
-        // Created here, because $validator has to be sent before it is hashed
-        $selector = $this->createAuthenticationTokenSelector($user);
-        $validator = $this->createAuthenticationTokenValidator();
-
-        $authenticationToken = $this->createAuthenticationToken($selector, $validator);
-
-        $this->cookieService->setAuthenticationToken($selector, $validator, $remember); // Without hashed validator
-        $this->storeAuthenticationToken($authenticationToken); // With hashed validator
+        return $user;
     }
 
     /**
-     * @throws InvalidAuthorizationTokenException
+     * This functions accepts authorization token (sent via e-mail as a link) and returns authentication token
+     * @throws InvalidAuthorizationCodeException
+     * @throws InactiveUserException
      */
     public function loginWithoutPassword(
-        string $authorizationTokenString,
-        bool   $remember
-    )
+        string $authorizationCode
+    ): User
     {
-        list($authorizationTokenSelector, $authorizationTokenValidator) = AuthorizationToken::getSelectorAndValidatorFromString($authorizationTokenString);
+        list($authorizationTokenSelector, $authorizationTokenValidator) = AuthorizationToken::parseAuthorizationCode($authorizationCode);
 
         $authorizationToken = $this->authorizationService->fetchAuthorizationTokenBySelector($authorizationTokenSelector);
 
@@ -91,23 +104,19 @@ class AuthenticationService implements AuthenticationServiceInterface
         try {
             $user = $this->userService->fetchUserByAuthorizationToken($authorizationToken);
         } catch (UserNotFoundException $e) {
-            throw new InvalidAuthorizationTokenException($e->getMessage());
+            throw new InvalidAuthorizationCodeException($e->getMessage());
         }
 
-        // Created here, because $validator has to be sent before it is hashed
-        $authenticationTokenSelector = $this->createAuthenticationTokenSelector($user);
-        $authenticationTokenValidator = $this->createAuthenticationTokenValidator();
+        if (!$user->getActive()) {
+            throw new InactiveUserException();
+        }
 
-        $authenticationToken = $this->createAuthenticationToken($authenticationTokenSelector, $authenticationTokenValidator);
-
-        $this->cookieService->setAuthenticationToken($authenticationTokenSelector, $authenticationTokenValidator, $remember); // Without hashed validator
-        $this->storeAuthenticationToken($authenticationToken); // With hashed validator
+        return $user;
     }
 
-    public function logout()
+    public function logout(User $user)
     {
-        $this->destroyAuthenticationToken();
-        $this->cookieService->unsetAuthenticationToken();
+        $this->deleteAuthenticationToken($user);
     }
 
     #[Pure] public function getUser(): ?User
@@ -115,44 +124,8 @@ class AuthenticationService implements AuthenticationServiceInterface
         return $this->user;
     }
 
-    private function createAuthenticationToken(
-        string $selector,
-        string $validator
-    ): AuthenticationToken
+    private function deleteAuthenticationToken(User $user)
     {
-        $hashedValidator = $this->securityService->hash(
-            "sha256",
-            $validator
-        );
-
-        return $this->authenticationTokenFactory->create($selector, $hashedValidator);
-    }
-
-    private function destroyAuthenticationToken()
-    {
-        // TODO log if redis delete fails?
-        $this->inMemoryCacheService->delete(
-            InMemoryCacheNamespaceEnum::AUTHENTICATION_TOKEN,
-            $this->authenticationToken->getSelector()
-        );
-    }
-
-    private function storeAuthenticationToken(AuthenticationToken $authenticationToken)
-    {
-        $this->inMemoryCacheService->set(
-            InMemoryCacheNamespaceEnum::AUTHENTICATION_TOKEN,
-            $authenticationToken->getSelector(),
-            $authenticationToken->getValidator()
-        );
-    }
-
-    #[Pure] private function createAuthenticationTokenSelector(User $user): string
-    {
-        return $user->getId();
-    }
-
-    private function createAuthenticationTokenValidator(): string
-    {
-        return $this->securityService->bin2hex($this->securityService->randomBytes(32));
+        $this->authenticationTokenRepository->deleteByUser($user);
     }
 }

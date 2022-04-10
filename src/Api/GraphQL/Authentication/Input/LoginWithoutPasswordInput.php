@@ -2,7 +2,6 @@
 
 namespace Paladin\Api\GraphQL\Authentication\Input;
 
-use Paladin\Enum\TranslatorEnum;
 use Symfony\Component\Validator\Constraints as Assert;
 use TheCodingMachine\GraphQLite\Annotations\Field;
 use TheCodingMachine\GraphQLite\Annotations\Input;
@@ -12,43 +11,21 @@ class LoginWithoutPasswordInput
 {
     #[Assert\NotBlank]
     #[Field]
-    private string $authorizationToken;
-
-    #[Assert\Type(
-        type: "bool"
-    )]
-    #[Field]
-    private bool $remember = false;
+    private string $authorizationCode;
 
     /**
      * @return string
      */
-    public function getAuthorizationToken(): string
+    public function getAuthorizationCode(): string
     {
-        return $this->authorizationToken;
+        return $this->authorizationCode;
     }
 
     /**
-     * @param string $authorizationToken
+     * @param string $authorizationCode
      */
-    public function setAuthorizationToken(string $authorizationToken): void
+    public function setAuthorizationCode(string $authorizationCode): void
     {
-        $this->authorizationToken = $authorizationToken;
-    }
-
-    /**
-     * @return bool
-     */
-    public function getRemember(): bool
-    {
-        return $this->remember;
-    }
-
-    /**
-     * @param bool $remember
-     */
-    public function setRemember(bool $remember): void
-    {
-        $this->remember = $remember;
+        $this->authorizationCode = $authorizationCode;
     }
 }

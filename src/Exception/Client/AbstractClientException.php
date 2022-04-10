@@ -8,7 +8,6 @@ use Paladin\Enum\ResponseStatusCodeEnum;
 
 abstract class AbstractClientException extends Exception
 {
-    // Exceptions for User input error handling
     // Client exceptions should always be caught and transformed before the response is sent
     #[Pure] public function __construct(string $message = "")
     {

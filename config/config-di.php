@@ -16,19 +16,20 @@ use Paladin\Core\MiddlewareStack\MiddlewareStack;
 use Paladin\Core\MiddlewareStack\MiddlewareStackInterface;
 use Paladin\Enum\ContentTypeEnum;
 use Paladin\Enum\EnvironmentEnum;
-use Paladin\Enum\InMemoryCacheNamespaceEnum;
+use Paladin\Enum\RequestHeaderEnum;
 use Paladin\Enum\RequestMethodEnum;
 use Paladin\Enum\ResponseStatusCodeEnum;
-use Paladin\Exception\Client\UserNotFoundException;
+use Paladin\Exception\Client\InvalidAuthenticationCodeException;
+use Paladin\Model\Document\AuthenticationToken;
 use Paladin\Model\Document\AuthorizationToken;
 use Paladin\Model\Document\User;
+use Paladin\Model\DocumentFactory\AuthenticationToken\AuthenticationTokenFactory;
+use Paladin\Model\DocumentFactory\AuthenticationToken\AuthenticationTokenFactoryInterface;
 use Paladin\Model\DocumentFactory\AuthorizationToken\AuthorizationTokenFactory;
 use Paladin\Model\DocumentFactory\AuthorizationToken\AuthorizationTokenFactoryInterface;
 use Paladin\Model\DocumentFactory\User\UserFactory;
 use Paladin\Model\DocumentFactory\User\UserFactoryInterface;
-use Paladin\Model\Entity\AuthenticationToken;
-use Paladin\Model\EntityFactory\AuthenticationToken\AuthenticationTokenFactory;
-use Paladin\Model\EntityFactory\AuthenticationToken\AuthenticationTokenFactoryInterface;
+use Paladin\Model\Repository\AuthenticationToken\AuthenticationTokenRepositoryInterface;
 use Paladin\Model\Repository\AuthorizationToken\AuthorizationTokenRepositoryInterface;
 use Paladin\Model\Repository\User\UserRepositoryInterface;
 use Paladin\Service\Authentication\AuthenticationService;
@@ -37,8 +38,6 @@ use Paladin\Service\Authorization\AuthorizationService;
 use Paladin\Service\Authorization\AuthorizationServiceInterface;
 use Paladin\Service\Cache\InMemoryCacheService;
 use Paladin\Service\Cache\InMemoryCacheServiceInterface;
-use Paladin\Service\Cookie\CookieService;
-use Paladin\Service\Cookie\CookieServiceInterface;
 use Paladin\Service\Mailer\MailerService;
 use Paladin\Service\Mailer\MailerServiceInterface;
 use Paladin\Service\Security\SecurityService;
@@ -76,52 +75,48 @@ return [
 
     // Services
     AuthenticationServiceInterface::class => DI\factory(function (
-        AuthenticationTokenFactoryInterface $authenticationTokenFactory,
-        AuthorizationServiceInterface       $authorizationService,
-        CookieServiceInterface              $cookieService,
-        InMemoryCacheServiceInterface       $inMemoryCacheService,
-        SecurityService                     $securityService,
-        UserServiceInterface                $userService
+        AuthenticationTokenFactoryInterface    $authenticationTokenFactory,
+        AuthenticationTokenRepositoryInterface $authenticationTokenRepository,
+        AuthorizationServiceInterface          $authorizationService,
+        SecurityService                        $securityService,
+        ServerRequestInterface                 $serverRequest,
+        UserServiceInterface                   $userService
     ) {
-        $authenticationTokenString = $cookieService->getAuthenticationToken();
-        $authenticationToken = null;
+        // HTTP request header Authorization contains an authentication code
+        $authenticationCode = str_replace("Bearer ", "", $serverRequest->getHeaderLine(RequestHeaderEnum::AUTHORIZATION));
+
         $user = null;
 
-        if ($authenticationTokenString) {
-            list($selector, $validator) = AuthenticationToken::getSelectorAndValidatorFromString($authenticationTokenString);
+        if ($authenticationCode) {
+            try {
+                list($selector, $validator) = AuthenticationToken::parseAuthenticationCode($authenticationCode);
 
-            if ($selector && $validator) {
                 // TODO encrypt/decrypt selector
-                $storedValidator = $inMemoryCacheService->get(InMemoryCacheNamespaceEnum::AUTHENTICATION_TOKEN, $selector);
+                /** @var AuthenticationToken $authenticationToken */
+                $authenticationToken = $authenticationTokenRepository->findOneBy(["selector" => $selector]);
 
-                if ($storedValidator && $securityService->hashEquals(
-                        $storedValidator,
-                        $securityService->hash("sha256", $validator) // Validator stored in a Cookie is not hashed
+                if ($authenticationToken && $securityService->hashEquals(
+                        $authenticationToken->getValidator(),
+                        $securityService->hash("sha256", $validator) // Validator stored in a header is not hashed
                     )) {
 
-                    try {
-                        $user = $userService->fetchUserById($selector); // Selector === FetchUserResponse id
-                        $authenticationToken = $authenticationTokenFactory->create($user->getId(), $validator);
-                    } catch (UserNotFoundException $e) {
-                    }
-                    // TODO remove all tokens from in memory cache?
+                    $user = $authenticationToken->getUser();
                 }
+            } catch (InvalidAuthenticationCodeException $e) {
+
             }
         }
 
         return new AuthenticationService(
             $authenticationTokenFactory,
+            $authenticationTokenRepository,
             $authorizationService,
-            $cookieService,
-            $inMemoryCacheService,
             $securityService,
             $userService,
-            $authenticationToken,
             $user
         );
     }),
     AuthorizationServiceInterface::class => DI\autowire(AuthorizationService::class),
-    CookieServiceInterface::class => DI\autowire(CookieService::class),
     InMemoryCacheServiceInterface::class => DI\factory((function () {
         return new InMemoryCacheService("redis://" . REDIS_HOST . ":" . REDIS_PORT . "/0");
     })),
@@ -136,6 +131,9 @@ return [
     UserFactoryInterface::class => DI\autowire(UserFactory::class),
 
     // Repositories
+    AuthenticationTokenRepositoryInterface::class => DI\factory(function (DocumentManager $dm) {
+        return $dm->getRepository(AuthenticationToken::class);
+    }),
     AuthorizationTokenRepositoryInterface::class => DI\factory(function (DocumentManager $dm) {
         return $dm->getRepository(AuthorizationToken::class);
     }),
@@ -236,7 +234,7 @@ return [
             "credentials" => ACCESS_CONTROL_ALLOW_CREDENTIALS === "true",
             "cache" => 0,
             // TODO extract to a separate file and only log errors if possible
-            // "logger" => $logger
+            "logger" => $logger
         ]);
     }),
 

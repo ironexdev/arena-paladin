@@ -25,12 +25,6 @@ class CreateAuthorizationTokenInput
     #[Field]
     private string $action;
 
-    #[Assert\Type(
-        type: "bool"
-    )]
-    #[Field]
-    private bool $remember;
-
     /**
      * @return string
      */
@@ -61,21 +55,5 @@ class CreateAuthorizationTokenInput
     public function setAction(string $action): void
     {
         $this->action = $action;
-    }
-
-    /**
-     * @return bool
-     */
-    public function getRemember(): bool
-    {
-        return $this->remember;
-    }
-
-    /**
-     * @param bool $remember
-     */
-    public function setRemember(bool $remember): void
-    {
-        $this->remember = $remember;
     }
 }

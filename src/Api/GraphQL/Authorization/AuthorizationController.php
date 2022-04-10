@@ -40,11 +40,10 @@ class AuthorizationController extends AbstractController
             return true;
         }
 
-        // Created here, because $validator has to be sent before it is hashed
         $selector = $authorizationService->createAuthorizationTokenSelector();
         $validator = $authorizationService->createAuthorizationTokenValidator();
 
-        $authorizationToken = $authorizationService->createAuthorizationToken($selector, $validator, $action, $user);
+        $authorizationToken = $authorizationService->createAuthorizationToken($selector, $validator, $action, $user); // With hashed validator
 
         try {
             $dm->persist($authorizationToken);
@@ -54,7 +53,7 @@ class AuthorizationController extends AbstractController
         }
 
         if ($action === AuthorizationActionEnum::LOGIN_WITHOUT_PASSWORD) {
-            $mailerService->sendLoginWithoutPasswordAuthorizationEmail($user->getEmail(), $selector . ":" . $validator, $createAuthorizationTokenInput->getRemember());
+            $mailerService->sendLoginWithoutPasswordAuthorizationEmail($user->getEmail(), $selector . ":" . $validator); // Without hashed validator
         }
 
         return true;

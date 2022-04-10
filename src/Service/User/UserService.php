@@ -3,7 +3,7 @@
 namespace Paladin\Service\User;
 
 use Doctrine\ODM\MongoDB\DocumentManager;
-use Paladin\Exception\Client\InvalidAuthorizationTokenException;
+use Paladin\Exception\Client\InvalidAuthorizationCodeException;
 use Paladin\Exception\Client\UserNotFoundException;
 use Paladin\Model\Document\AuthorizationToken;
 use Paladin\Model\Document\User;
@@ -21,19 +21,19 @@ class UserService implements UserServiceInterface
     }
 
     /**
-     * @throws InvalidAuthorizationTokenException
+     * @throws InvalidAuthorizationCodeException
      * @throws UserNotFoundException
      */
-    public function activateUser(string $authorizationTokenString)
+    public function activateUser(string $authorizationCode)
     {
-        list($authorizationTokenSelector, $authorizationTokenValidator) = AuthorizationToken::getSelectorAndValidatorFromString($authorizationTokenString);
+        list($selector, $validator) = AuthorizationToken::parseAuthorizationCode($authorizationCode);
 
         $authorizationToken = $this->authorizationService->fetchAuthorizationTokenBySelector(
-            $authorizationTokenSelector
+            $selector
         );
 
         $this->authorizationService->validateAuthorizationToken(
-            $authorizationTokenValidator,
+            $validator,
             $authorizationToken
         );
 

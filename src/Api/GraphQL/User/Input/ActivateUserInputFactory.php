@@ -8,12 +8,12 @@ class ActivateUserInputFactory
 {
     #[Factory]
     public function create(
-        string $authorizationToken
+        string $authorizationCode
     ): ActivateUserInput
     {
         $activateUserInput = new ActivateUserInput();
 
-        $activateUserInput->setAuthorizationToken($authorizationToken);
+        $activateUserInput->setAuthorizationCode($authorizationCode);
 
         return $activateUserInput;
     }

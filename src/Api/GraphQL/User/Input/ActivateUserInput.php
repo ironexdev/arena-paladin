@@ -12,21 +12,21 @@ class ActivateUserInput
 {
     #[Assert\NotBlank]
     #[Field]
-    private string $authorizationToken;
+    private string $authorizationCode;
 
     /**
      * @return string
      */
-    public function getAuthorizationToken(): string
+    public function getAuthorizationCode(): string
     {
-        return $this->authorizationToken;
+        return $this->authorizationCode;
     }
 
     /**
-     * @param string $authorizationToken
+     * @param string $authorizationCode
      */
-    public function setAuthorizationToken(string $authorizationToken): void
+    public function setAuthorizationCode(string $authorizationCode): void
     {
-        $this->authorizationToken = $authorizationToken;
+        $this->authorizationCode = $authorizationCode;
     }
 }

@@ -8,14 +8,12 @@ class LoginWithoutPasswordInputFactory
 {
     #[Factory]
     public function create(
-        string $authorizationToken,
-        bool   $remember = false,
+        string $authorizationCode,
     ): LoginWithoutPasswordInput
     {
         $loginWithoutPasswordInput = new LoginWithoutPasswordInput();
 
-        $loginWithoutPasswordInput->setAuthorizationToken($authorizationToken);
-        $loginWithoutPasswordInput->setRemember($remember);
+        $loginWithoutPasswordInput->setAuthorizationCode($authorizationCode);
 
         return $loginWithoutPasswordInput;
     }

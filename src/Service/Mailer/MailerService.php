@@ -25,16 +25,14 @@ class MailerService implements MailerServiceInterface
 
     public function sendLoginWithoutPasswordAuthorizationEmail(
         string $to,
-        string $authorizationTokenString,
-        bool   $remember
+        string $authorizationCode
     )
     {
         $email = new Email();
 
         $authorizationLink = CLIENT_URL .
             "/authorization" . // TODO translate this
-            "?token=" . $authorizationTokenString .
-            "&remember=" . (int)$remember .
+            "?code=" . $authorizationCode .
             "&action=" . AuthorizationActionEnum::LOGIN_WITHOUT_PASSWORD;
 
         $html = $this->translator->trans(TranslatorEnum::EMAIL_LOGIN_AUTHORIZATION_BODY, [
@@ -87,13 +85,13 @@ class MailerService implements MailerServiceInterface
         }
     }
 
-    public function sendActivateUserAuthorizationEmail(string $to, string $authorizationTokenString)
+    public function sendActivateUserAuthorizationEmail(string $to, string $authorizationCode)
     {
         $email = new Email();
 
         $authorizationLink = CLIENT_URL .
             "/authorization" .
-            "?token=" . $authorizationTokenString .
+            "?code=" . $authorizationCode .
             "&action=" . AuthorizationActionEnum::ACTIVATE_USER;
 
         $html = $this->translator->trans(TranslatorEnum::EMAIL_ACTIVATE_USER_BODY, [

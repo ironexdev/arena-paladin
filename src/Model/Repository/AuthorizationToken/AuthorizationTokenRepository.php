@@ -13,4 +13,9 @@ class AuthorizationTokenRepository extends DocumentRepository implements Authori
 
         return $authorizationToken;
     }
+
+    public function delete(AuthorizationToken $authorizationToken)
+    {
+        $this->dm->remove($authorizationToken);
+    }
 }

@@ -9,15 +9,13 @@ class LoginInputFactory
     #[Factory]
     public function create(
         string $email,
-        string $password,
-        bool   $remember = false
+        string $password
     ): LoginInput
     {
         $loginInput = new LoginInput();
 
         $loginInput->setEmail($email);
         $loginInput->setPassword($password);
-        $loginInput->setRemember($remember);
 
         return $loginInput;
     }

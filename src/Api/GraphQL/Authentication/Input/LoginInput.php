@@ -25,12 +25,6 @@ class LoginInput
     #[Field]
     private string $password;
 
-    #[Assert\Type(
-        type: "bool"
-    )]
-    #[Field]
-    private bool $remember = false;
-
     /**
      * @return string
      */
@@ -61,21 +55,5 @@ class LoginInput
     public function setPassword(string $password): void
     {
         $this->password = $password;
-    }
-
-    /**
-     * @return bool
-     */
-    public function getRemember(): bool
-    {
-        return $this->remember;
-    }
-
-    /**
-     * @param bool $remember
-     */
-    public function setRemember(bool $remember): void
-    {
-        $this->remember = $remember;
     }
 }

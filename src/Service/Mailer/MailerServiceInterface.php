@@ -6,11 +6,10 @@ interface MailerServiceInterface
 {
     public function sendLoginWithoutPasswordAuthorizationEmail(
         string $to,
-        string $authorizationTokenString,
-        bool   $remember
+        string $authorizationCode
     );
 
     public function sendRegistrationUserAlreadyExistsEmail(string $to);
 
-    public function sendActivateUserAuthorizationEmail(string $to, string $authorizationTokenString);
+    public function sendActivateUserAuthorizationEmail(string $to, string $authorizationCode);
 }
